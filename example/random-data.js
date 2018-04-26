@@ -38,9 +38,10 @@ function getRandomData(ordinal = false) {
         runLength = new Date(runLength.getTime() + segMaxLength);
 
         return {
+          detailInfos: {description: 'stop'},
           timeRange: [start, end],
-          val: ordinal ? categoryLabels[Math.ceil(Math.random()*nCategories)] : Math.random()
-          //labelVal: is optional - only displayed in the labels
+          val: ordinal ? categoryLabels[Math.ceil(Math.random()*nCategories)] : Math.random(),
+          labelVal: '0013'
         };
       });
 

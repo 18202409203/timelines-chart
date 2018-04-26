@@ -87,8 +87,9 @@ export default Kapsule({
                       ?rawData[i].data[j].data[k].timeRange
                       :[new Date(rawData[i].data[j].data[k].timeRange[0]), new Date(rawData[i].data[j].data[k].timeRange[1])]
                   ),
-                  val: rawData[i].data[j].data[k].val,
-                  labelVal: rawData[i].data[j].data[k][rawData[i].data[j].data[k].hasOwnProperty('labelVal')?'labelVal':'val']
+                  detailInfos: rawData[i].data[j].data[k].detailInfos, // 详细信息
+                  val: rawData[i].data[j].data[k].val, // 停歇原因code
+                  labelVal: rawData[i].data[j].data[k][rawData[i].data[j].data[k].hasOwnProperty('labelVal')?'labelVal':'val'] // 停歇原因name
                 });
               }
               state.totalNLines++;
@@ -130,12 +131,43 @@ export default Kapsule({
       }
     },
     minSegmentDuration: {},
-    zColorScale: { default: d3ScaleSequential(interpolateRdYlBu) },
-    zQualitative: { default: false, onChange(discrete, state) {
-      state.zColorScale = discrete
-        ? d3ScaleOrdinal([...schemeCategory10, ...schemeSet3])
-        : d3ScaleSequential(interpolateRdYlBu); // alt: d3.interpolateInferno
-    }},
+    // zColorScale: { default: d3ScaleSequential(interpolateRdYlBu) },
+    zColorScale: { default: 
+      // d3ScaleOrdinal([...schemeCategory10])
+      d3ScaleOrdinal() // 按顺序依次对应 停歇原因 和 颜色
+        .domain([
+          '0001',
+          '0002',
+          '0003',
+          '0004',
+          '0005',
+          '0006',
+          '0007',
+          '0008',
+          '0009',
+          '0010',
+          '0011',
+          '0012',
+          '0013',
+          '0014',
+          '0015',
+          '0016',
+          '0017',
+          '0018',
+          '0019',
+          '0020',
+          '1000'
+        ])
+        .range([...schemeCategory10,...schemeSet3])
+    },
+    // zQualitative: { default: false, onChange(discrete, state) {
+    //   state.zColorScale = 
+    //     // discrete
+    //     // ? d3ScaleOrdinal([...schemeCategory10, ...schemeSet3])
+    //     d3ScaleOrdinal([...schemeCategory10])
+    //     // : 
+    //     // d3ScaleSequential(interpolateRdYlBu); // alt: d3.interpolateInferno
+    // }},
     zDataLabel: { default: '', triggerUpdate: false }, // Units of z data. Used in the tooltip descriptions
     zScaleLabel: { default: '', triggerUpdate: false }, // Units of colorScale. Used in the legend label
     enableOverview: { default: true }, // True/False
@@ -485,12 +517,13 @@ export default Kapsule({
         .direction('s')
         .offset([5, 0])
         .html(d => {
-          const normVal = state.zColorScale.domain()[state.zColorScale.domain().length-1] - state.zColorScale.domain()[0];
+          // const normVal = state.zColorScale.domain()[state.zColorScale.domain().length-1] - state.zColorScale.domain()[0];
           const dateFormat = (state.useUtc ? d3UtcFormat : d3TimeFormat)(`${state.timeFormat}${state.useUtc?' (UTC)':''}`);
-          return '<strong>' + d.labelVal + ' </strong>' + state.zDataLabel
-            + (normVal?' (<strong>' + Math.round((d.val-state.zColorScale.domain()[0])/normVal*100*100)/100 + '%</strong>)':'') + '<br>'
+          return '<strong>Stop Cause: ' + d.labelVal + ' </strong>' + state.zDataLabel
+            + (' (<strong>' + d.val + '</strong>)') + '<br>'
             + '<strong>From: </strong>' + dateFormat(d.timeRange[0]) + '<br>'
-            + '<strong>To: </strong>' + dateFormat(d.timeRange[1]);
+            + '<strong>To: </strong>' + dateFormat(d.timeRange[1]) + '<br>'
+            + '<strong>Description: </strong>' + d.detailInfos.description
         });
 
       state.svg.call(state.segmentTooltip);
@@ -788,7 +821,8 @@ export default Kapsule({
           .attr('transform', `translate(${state.leftMargin + state.graphW*0.05},2)`);
 
       state.colorLegend
-        .width(Math.max(120, state.graphW/3 * (state.zQualitative?2:1)))
+        // .width(Math.max(120, state.graphW/3 * (state.zQualitative?2:1)))
+        .width(Math.max(120, state.graphW/3 *2))
         .height(state.topMargin*.6)
         .scale(state.zColorScale)
         .label(state.zScaleLabel);

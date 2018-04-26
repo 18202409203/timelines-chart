@@ -35,8 +35,10 @@
 
   .series-group {
     fill-opacity: 0.6;
-    stroke: #808080;
-    stroke-opacity: 0.2;
+    /* stroke: #808080; */
+    stroke: #000000;
+    stroke-width: 3px;
+    stroke-opacity: 1;
   }
 
   .series-segment {
